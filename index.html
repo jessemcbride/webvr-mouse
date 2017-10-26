@@ -1,0 +1,35 @@
+<html>
+  <head>
+<script src="https://aframe.io/releases/0.3.0/aframe.min.js"></script>
+<script src="https://rawgit.com/bryik/aframe-bmfont-text-component/master/dist/aframe-bmfont-text-component.min.js"></script>
+</head>
+
+<body>
+  <a-scene>
+    <!-- CAMERA --> 
+     <a-entity id="camera" camera position="0 0 0" look-controls wasd-controls="enabled: false;"></a-entity>
+    
+   
+    <a-sky color="#fff"></a-sky>
+		
+	<a-entity id="text" position="-5.5 1.5 -2.9" bmfont-text="color: black; text: Something; align: center;" rotation="" scale="2.2 2.2 2.2" visible="">
+	</a-entity>
+  </a-scene>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script> 
+
+   var camera = document.getElementById('camera');
+
+   var socket = io.connect('http://localhost:3000');
+   socket.on('connect', function(data) {
+      socket.emit('join', 'Hello World from client');
+   });
+
+   socket.on('update', function(data) {
+   		camera.setAttribute('position', data['x'] + ' ' + data['y'] + ' 0');
+   		console.log(data);
+   });
+  </script>  
+  </body>
+</html>
