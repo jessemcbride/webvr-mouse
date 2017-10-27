@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/0.3.0/aframe.min.js"></script>
+    <script src="https://rawgit.com/bryik/aframe-bmfont-text-component/master/dist/aframe-bmfont-text-component.min.js"></script>
+  </head>
+
+  <body>
+    <a-scene>
+      <a-entity id="camera" camera position="0 0 0" look-controls wasd-controls="enabled: false;"></a-entity>
+      <a-sky color="#fff"></a-sky>
+
+      <a-entity id="text" position="-5.5 1.5 -2.9" bmfont-text="color: black; text: Something; align: center;" rotation="" scale="2.2 2.2 2.2" visible=""></a-entity>
+    </a-scene>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script> 
+    var _camera = document.getElementById('camera');
+    var position = _camera.getAttribute('position');
+    var lastMousePosition = null;
+
+    function Camera(x, y, z) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+    }
+
+    Camera.prototype.update = function(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+
+        _camera.setAttribute('position', this.toString());
+      }
+
+    Camera.prototype.toString = function() {
+        return this.x + ' ' + this.y + ' ' + this.z;
+      }
+
+    var camera = new Camera(
+      position['x'],
+      position['y'],
+      position['z']
+    );
+
+    var socket = io.connect('http://localhost:3000');
+
+    socket.on('connect', function(data) {
+      socket.emit('setViewer');
+    });
+
+    socket.on('sendMouseUpdate', function(data) {
+      if(lastMousePosition == null) {
+        lastMousePosition = data;
+        console.log('initial');
+        return;
+      }
+
+      if(data['x'] > lastMousePosition['x']) {
+        console.log('moving right');
+        camera.update(camera.x + 0.05, camera.y, camera.z);
+      } else if(data['x'] < lastMousePosition['x']) {
+        console.log('moving left');
+        camera.update(camera.x - 0.05, camera.y, camera.z);
+      }
+
+      if(data['y'] < lastMousePosition['y']) {
+        console.log('moving up');
+        camera.update(camera.x, camera.y + 0.05, camera.z);
+      } else if(data['y'] > lastMousePosition['y']) {
+        console.log('moving down');
+        camera.update(camera.x, camera.y - 0.05, camera.z);
+      }
+
+
+      lastMousePosition = data;
+    });
+
+    socket.on('sendKeyUpdate', function(data) {
+      // do something with keys
+      console.log('I would do something else.');
+    });
+  </script>  
+  </body>
+</html>
